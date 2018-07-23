@@ -2,6 +2,13 @@ import hashlib
 import json
 from time import time
 from urllib.parse import urlparse
+import binascii
+
+import Crypto
+import Crypto.Random
+from Crypto.Hash import SHA
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
 
 
 import requests
@@ -135,6 +142,16 @@ class Blockchain:
             return False, 'Insufficient amount in account'
 
         #TODO: signature check, need to implement crypto
+        # def verify_transaction_signature(self, sender_address, signature, transaction):
+        #     """
+        #     Check that the provided signature corresponds to transaction
+        #     signed by the public key (sender_address)
+        #     """
+        #     public_key = RSA.importKey(binascii.unhexlify(sender_address))
+        #     verifier = PKCS1_v1_5.new(public_key)
+        #     h = SHA.new(str(transaction).encode('utf8'))
+        #     return verifier.verify(h, binascii.unhexlify(signature))
+        #-------------------------------------------------------------------------
         # if sender != "0":
         #     j = {'sender': sender, 'recipient': recipient, 'amount': amount}
         #     msg = f'sender:{j["sender"]},recipient:{j["recipient"]},amount:{j["amount"]}'
@@ -142,6 +159,15 @@ class Blockchain:
         #     if not pub_key.verify_signature(signature, msg.encode()):
         #         print("invalid signature")
         #         return (False, "Signature invalid")
+
+        def sign_transaction(self):
+            """
+            Sign transaction with private key
+            """
+            private_key = RSA.importKey(binascii.unhexlify(self.sender_private_key))
+            signer = PKCS1_v1_5.new(private_key)
+            h = SHA.new(str(self.to_dict()).encode('utf8'))
+            return binascii.hexlify(signer.sign(h)).decode('ascii')
 
 
         self.current_transactions.append({
