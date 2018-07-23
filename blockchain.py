@@ -1,7 +1,8 @@
-from .Blockclass import Blockchain
-from flask import Flask, jsonify, request
+from Blockclass import Blockchain
+from flask import Flask, jsonify, request, redirect
 from uuid import uuid4
-
+import requests
+CONNECTED_NODE_ADDRESS = "http://127.0.0.1:5000"
 
 # Instantiate the Node
 app = Flask(__name__)
@@ -109,6 +110,29 @@ def balances():
     response = blockchain.balances()
 
     return jsonify(response), 200
+
+
+@app.route('/submit', methods=['POST'])
+def submit_textarea():
+    """
+    Endpoint to create a new transaction via our application.
+    """
+    post_content = request.form["content"]
+    author = request.form["author"]
+
+    post_object = {
+        'author': author,
+        'content': post_content,
+    }
+
+    # Submit a transaction
+    new_tx_address = "{}/new_transaction".format(CONNECTED_NODE_ADDRESS)
+
+    requests.post(new_tx_address,
+                  json=post_object,
+                  headers={'Content-type': 'application/json'})
+
+    return redirect('/')
 
 
 if __name__ == '__main__':
